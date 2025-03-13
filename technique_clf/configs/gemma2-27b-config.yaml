@@ -1,0 +1,58 @@
+wandb:
+  project: "unlp-clf-scripts"
+  entity: "bazdyrev99-igor-sikorsky-kyiv-polytechnic-institute"
+  run_name: "gemma2-27b_{val_fold}_{date}"
+
+dataset:
+  data_dir: "/home/abazdyrev/comps/unlp2025_shared_task/technique_clf/data"
+  train_path: "train.parquet"
+  cv_path: "cv_split.csv"
+  test_path: "test.csv"
+  sample_submission_path: "sample_submission.csv"
+
+prompt_generator:
+  instruction: "Ти експерт в аналізі постів в соцмережах. Тобі необхідно визначити наскільки пости містять в собі техніки маніпуляції."
+
+model:
+  pretrained_model: "/home/abazdyrev/pretrained_models/gemma-2-27b-it/"
+  max_length: 2560
+  architecture: "gemma2"
+
+nf4_config:
+  load_in_4bit: true
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_use_double_quant: false
+  bnb_4bit_compute_dtype: "torch.bfloat16"
+
+lora_config:
+  r: 64
+  lora_alpha: 128
+  lora_dropout: 0.05
+  bias: "none"
+  inference_mode: false
+  task_type: "SEQ_CLS"
+  target_modules: ["o_proj", "v_proj", "q_proj", "k_proj", "gate_proj", "down_proj", "up_proj"]
+
+train_args:
+  output_dir: "checkpoints/{run_name}"
+  logging_dir: "logs/{run_name}"
+  learning_rate: 0.00002
+  weight_decay: 0.01
+  lr_scheduler_type: "cosine"
+  warmup_ratio: 0.0
+  num_train_epochs: 5
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 8
+  gradient_accumulation_steps: 4
+  bf16: true
+  report_to: "wandb"
+  optim: "adamw_8bit"
+  eval_strategy: "steps"
+  save_strategy: "steps"
+  eval_steps: 50
+  logging_steps: 5
+  save_steps: 50
+  save_total_limit: 10
+  metric_for_best_model: "f1"
+  greater_is_better: true
+  load_best_model_at_end: true
