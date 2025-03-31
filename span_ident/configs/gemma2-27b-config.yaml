@@ -1,0 +1,56 @@
+wandb:
+  project: "unlp-span-ident-scripts"
+  entity: "bazdyrev99-igor-sikorsky-kyiv-polytechnic-institute"
+  run_name: "gemma2-27b_{val_fold}_{date}"
+
+dataset:
+  data_dir: "/home/abazdyrev/repos/unlp2025_shared_task/span_ident/data"
+  train_path: "train.parquet"
+  cv_path: "cv_split.csv"
+  test_path: "test.csv"
+  sample_submission_path: "sample_submission.csv"
+
+model:
+  pretrained_model: "/home/abazdyrev/pretrained_models/gemma2-27b-it-unmasked/"
+  mock_clf_model: "/home/abazdyrev/pretrained_models/gemma-2-27b-it/"
+  max_length: 2560
+  architecture: "gemma2"
+
+nf4_config:
+  load_in_4bit: true
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_use_double_quant: false
+  bnb_4bit_compute_dtype: "torch.bfloat16"
+
+lora_config:
+  r: 64
+  lora_alpha: 32
+  lora_dropout: 0.05
+  bias: "none"
+  inference_mode: false
+  task_type: "TOKEN_CLS"
+  target_modules: ["o_proj", "v_proj", "q_proj", "k_proj", "gate_proj", "down_proj", "up_proj"]
+
+train_args:
+  output_dir: "checkpoints/{run_name}"
+  logging_dir: "logs/{run_name}"
+  learning_rate: 0.00002
+  weight_decay: 0.01
+  lr_scheduler_type: "cosine"
+  warmup_ratio: 0.0
+  num_train_epochs: 3
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 4
+  bf16: true
+  report_to: "wandb"
+  optim: "adamw_8bit"
+  eval_strategy: "steps"
+  save_strategy: "steps"
+  eval_steps: 200
+  logging_steps: 20
+  save_steps: 200
+  save_total_limit: 10
+  metric_for_best_model: "eval_f1"
+  greater_is_better: true
+  load_best_model_at_end: true
