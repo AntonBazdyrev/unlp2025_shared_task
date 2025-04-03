@@ -157,6 +157,12 @@ def main(fold_dirs, config, output_dir, th_type):
     submission_filename = f"ensemble_reg.csv"
     submission_path = os.path.join(output_dir, submission_filename)
     submission.to_csv(submission_path, index=False)
+
+    np.save(os.path.join(output_dir, "ensemble_probs.npy"), ensemble_probs)
+    np.save(os.path.join(output_dir, "ensemble_mask.npy"), mask_labels)
+    
+    with open(os.path.join(output_dir, "thresholds.yaml"), "w") as f:
+        yaml.dump({'gs': float(ensemble_thresholds_gs), 'reg': float(ensemble_thresholds_regularized)}, f)
    
     click.echo(f"Ensemble submission saved to: {submission_path}")
 

@@ -259,31 +259,41 @@ def get_model(config, load_lora=True):
         **config['nf4_config']
     )
 
-    backbone_model = Gemma2BiModel.from_pretrained(
-        pretrained_model, torch_dtype=torch.bfloat16,
-        quantization_config=bnb_config
-    )
-
     id2label = {0: 0, 1: 1}
     label2id = {0: 0, 1: 1}
-    model = AutoModelForTokenClassification.from_pretrained(
-        mock_model,
-        torch_dtype=torch.bfloat16,
-        quantization_config=bnb_config,
-        id2label=id2label,
-        label2id=label2id
-    )
-    model.model = backbone_model
-    torch.cuda.empty_cache()
-
-    model = prepare_model_for_kbit_training(model)
-
-    if load_lora:
-        lora_config = LoraConfig(
-            **config['lora_config']
+    
+    if config['model']['architecture'] == 'mdeberta':
+        model = AutoModelForTokenClassification.from_pretrained(
+            pretrained_model,
+            id2label=id2label,
+            label2id=label2id
         )
-        
-        model = get_peft_model(model, lora_config)
-        model.print_trainable_parameters()
+    else: 
+        backbone_model = Gemma2BiModel.from_pretrained(
+            pretrained_model, torch_dtype=torch.bfloat16,
+            quantization_config=bnb_config
+        )
+    
+        id2label = {0: 0, 1: 1}
+        label2id = {0: 0, 1: 1}
+        model = AutoModelForTokenClassification.from_pretrained(
+            mock_model,
+            torch_dtype=torch.bfloat16,
+            quantization_config=bnb_config,
+            id2label=id2label,
+            label2id=label2id
+        )
+        model.model = backbone_model
+        torch.cuda.empty_cache()
+    
+        model = prepare_model_for_kbit_training(model)
+    
+        if load_lora:
+            lora_config = LoraConfig(
+                **config['lora_config']
+            )
+            
+            model = get_peft_model(model, lora_config)
+            model.print_trainable_parameters()
     
     return model

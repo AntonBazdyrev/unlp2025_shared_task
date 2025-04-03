@@ -1,6 +1,7 @@
 #!/bin/bash
 
-CONFIG_PATH="configs/gemma2-27b-config.yaml"
+#CONFIG_PATH="configs/gemma2-27b-config.yaml"
+CONFIG_PATH="configs/mdeberta.yaml"
 
 for fold in {0..4}
 do

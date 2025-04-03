@@ -16,6 +16,7 @@ from model import get_model
 from trainer import get_trainer
 from utils import set_seeds
 from peft import PeftModel
+from transformers import AutoModelForTokenClassification
 
 # -------------------------------
 # Threshold optimization functions
@@ -216,8 +217,13 @@ def main(val_fold, config, checkpoint, result_dir):
     ds_train, ds_val, ds_test, tokenizer, dataset_distribution = load_datasets(config_data, val_fold)
     
     # Load the model and apply the LoRA weights from checkpoint
-    model = get_model(config_data, load_lora=False)
-    model = PeftModel.from_pretrained(model, checkpoint).eval()
+    if config_data['model']['architecture'] == 'mdeberta':
+         model = AutoModelForTokenClassification.from_pretrained(
+            checkpoint
+         ).eval()
+    else:
+        model = get_model(config_data, load_lora=False)
+        model = PeftModel.from_pretrained(model, checkpoint).eval()
     
     # Create trainer using your custom trainer class
     trainer = get_trainer(
