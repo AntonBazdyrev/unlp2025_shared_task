@@ -72,6 +72,47 @@ Here you can see results of models from each fold (with val score in the submiss
 ![](https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F1697396%2F696e67888b52bd2b7e18ecf2c4faf029%2FScreenshot%202025-04-03%20at%2021.17.05.png?generation=1743704288846098&alt=media)
 
 
+# Span Identification
+
+**Overview**
+
+Our solution is out of fold ensemble prediction of the custom bidirectional encoder based on the Gemma2-27b (model for token classification) for 5 folds with custom threshold tuning specifically for F1 metric optimization. 
+
+You can check the source code in the [repo](https://github.com/AntonBazdyrev/unlp2025_shared_task/tree/master)
+
+**Validation**
+Because we already knew the split for sure from the classification track - we used the same validation strategy in this task.
+
+**Token classification problem statement**
+
+We implemented a token classification labeling dataset using a custom binary-format labeling scheme without the BIO format, as our evaluation metric operates at the character level and not on the entity level, so we don't need to merge multi-token entities in order to maximize the metric.
+
+**Thresholds Optimization**
+You can check the more detailed analysis about threshold optimization for the F1 score [here](https://www.kaggle.com/competitions/unlp-2025-shared-task-classification-techniques/discussion/571513) in the Thresholds Optimization section. But in this task simple grid search optimization shows the best and consistent result.
+
+**Experiments**
+We explored various model architectures, including encoder-only models such as mBERT, XLM-RoBERTa, EuroBERT, and mDeBERTaV3—the latter proving to be the best-performing among “small” BERT-based architectures. However, we hypothesized that decoder-only LLMs, despite their uni-directional attention limitations, could achieve even better performance due to their larger parameter count and extensive pretraining. This hypothesis was confirmed through experimentation.
+
+Ultimately, we developed a custom encoder-only model architecture that enables bidirectional attention for large LLMs. Given the strong performance of the decoder-only Gemma 2-27B in our previous experiments, we chose it as the foundation for our final model, although AYA-101 and mDeBERTa encoder-only performed nearly as well. We pre-trained a bidirectional version of Gemma 2-27B on MLM task on the [Ukrainian news dataset](https://huggingface.co/datasets/zeusfsx/ukrainian-news) and the [Russian news dataset](https://huggingface.co/datasets/AIR-Bench/qa_news_ru). After pre-training, we fine-tuned the model on the competition data.
+
+Our custom bidirectional Gemma significantly outperformed both traditional encoder-only architectures and decoder-only LLMs, demonstrating the effectiveness of bidirectional attention in large-scale models.
+
+**Results**
+mDeBERTaV3:
+![](https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F1697396%2Ff1e7c488b08b64788d5ef04e31ea2f39%2Fmdeberta.png?generation=1743709099779638&alt=media)
+
+AYA-101:
+![](https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F1697396%2Fa332610bb71dd1d040544a3fee9cc66e%2Faya101.png?generation=1743709118139630&alt=media)
+
+Gemma 2-27B default decoder-only:
+![](https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F1697396%2Fe7a80b47a70e2c00beb766ef06d4bb60%2Fgemma27b.png?generation=1743709136217809&alt=media)
+
+Gemma 2-27B mlm-pretrained bidirectional encoder:
+![](https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F1697396%2F51b4443b7fe11711748db8e7cf16cf50%2Fgemma27mlm.png?generation=1743709170697793&alt=media)
+
+Ensemble of Gemma 2-27B mlm-pretrained bidirectional encoders:
+![](https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F1697396%2Ff265bfba270f0ed349fa39a83d6653d4%2Fensemble.png?generation=1743709201439096&alt=media)
+
 ## Legacy 
 ### Ideas to check
 
