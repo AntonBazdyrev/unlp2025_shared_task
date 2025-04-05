@@ -31,13 +31,13 @@ According to our experiments, we had a perfect CV-LB correlation. For some exper
 Usually, for tasks with a huge class imbalance, the default 0.5 th is not optimal at all.
 Because thresholds are independent in this case, we can do a grid search optimization for each class separately. The optimal that maximizes the F1 score on validation:
 
-$$t_{gs}^* = \operatorname{arg\,max}_{t \in [0,1]} F1\_{val}(t)$$
+$$t_{gs}^* = \text{argmax}_{t \in [0,1]} F1\_{val}(t)$$
 
 With this strategy we can achieve the best possible F1 on the local CV, but because of the its nature - it results in overfitting on the LB.
 
 So, there is another more robust option for threshold selection with respect to the class balance. Important note, you can check that this approach produces the near-optimal threshold for the near-perfect estimator.
 
-$$t_{cb}^* = \operatorname{arg\,min}_{t \in [0,1]} |r(t) - r^*|$$
+$$t_{cb}^* = \text{argmin}_{t \in [0,1]} |r(t) - r^*|$$
 
 Where, r* is the true positive class ratio and r(t) is the positive class ratio in the prediction with threshold t. This class balance based threshold results in a more stable performance, but in terms of the absolute values it produces suboptimal result.
 
